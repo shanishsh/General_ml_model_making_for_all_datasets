@@ -114,6 +114,7 @@ def check_constant(df:pd.DataFrame):
          raise CustomException(e,sys)
 
 def check_outliers(df:pd.DataFrame):
+    
     try:
         root_path=Path(__file__).resolve().parent.parent.parent
         config_path=root_path/"config"
@@ -152,3 +153,31 @@ def check_outliers(df:pd.DataFrame):
         raise CustomException(e,sys)
 
 
+def check_multicolinearity(df:pd.DataFrame):
+    try:
+        root_path=Path(__file__).resolve().parent.parent.parent
+        config_path=root_path/"config"
+
+        config_path.mkdir(parents=True,exist_ok=True)
+        eda_config_path=config_path/"eda_config.json"
+        
+
+        corr_matrix = df.corr(numeric_only=True).abs()
+
+        # Upper triangle
+        upper = corr_matrix.where(
+            np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
+        )
+
+        # Features to drop
+        threshold = 0.9
+        to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+
+        with open(eda_config_path) as file_obj:
+            data=json.load(file_obj)
+            data["highly_correlated_columns"]=to_drop
+        with open(eda_config_path,"w") as file_obj:
+            json.dump(data,file_obj,indent=4)
+    
+    except Exception as e:
+         raise CustomException(e,sys)

@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-from preprocess_changer import check_null,check_skew,check_constant,check_outliers
+from preprocess_changer import check_null,check_skew,check_constant,check_outliers,check_multicolinearity
 from src.logger import logging
 from src.exception import CustomException
 from plots import Plots
@@ -44,7 +44,7 @@ class Eda:
             check_skew(df)
             check_constant(df)
             check_outliers(df)
-
+            check_multicolinearity(df)
 
             ## some changes have to make for fureter like multivariate ------------------------
             plt=Plots()
