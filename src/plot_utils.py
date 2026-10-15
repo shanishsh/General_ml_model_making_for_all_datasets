@@ -103,7 +103,11 @@ class UnivariatePlot:
         plt.tight_layout()
         plt.savefig(self.plot_config.univariate_categorical_plot/f"barChart.png")
 
+class BivariatePlots:
+    def __init__(self) -> None:
+        self.plot_config=PlotConfig()
 
+        
     def bivariate_numerical_vs_numerical_plot(self):
 
         bivariates_plots_name=["Scatter Plot","Regression Plot (Regplot)","Line Plot"]
