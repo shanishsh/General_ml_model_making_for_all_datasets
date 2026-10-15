@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-from preprocess_changer import check_null,check_skew
+from preprocess_changer import check_null,check_skew,check_constant,check_outliers
 from src.logger import logging
 from src.exception import CustomException
 from plots import Plots
@@ -42,12 +42,15 @@ class Eda:
             logging.info("CALLLING - check_null - FUNCTION")
             check_null(df)
             check_skew(df)
+            check_constant(df)
+            check_outliers(df)
 
 
             ## some changes have to make for fureter like multivariate ------------------------
             plt=Plots()
             plt.univariate_plots()
             plt.bivariate_plots()
+            
 
             #--------------
             

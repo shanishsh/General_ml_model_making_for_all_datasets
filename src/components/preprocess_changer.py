@@ -81,14 +81,74 @@ def check_skew(df:pd.DataFrame):
         num_cols=df.select_dtypes(include="number").columns
 
         cols_to_log_transform=df[num_cols].skew()[(df[num_cols].skew()>1) | (df[num_cols].skew()<-1)].index.tolist()
-        cols_to_log_transform={"Columns to log transform":cols_to_log_transform}
+        # cols_to_log_transform={"Columns to log transform":cols_to_log_transform}
 
 
         with open(eda_config_path) as file_obj:
             data=json.load(file_obj)
-            data["Columns_to_log_transform"]=str(list(cols_to_log_transform.values())[0])
+            data["Columns_to_log_transform"]=cols_to_log_transform
         with open(eda_config_path,"w") as file_obj:
             json.dump(data,file_obj,indent=4)
 
     except Exception as e:
         raise CustomException(e,sys)
+
+def check_constant(df:pd.DataFrame):
+
+    try:
+        root_path=Path(__file__).resolve().parent.parent.parent
+        config_path=root_path/"config"
+
+        config_path.mkdir(parents=True,exist_ok=True)
+        eda_config_path=config_path/"eda_config.json"
+
+        constant_cols=df.nunique()[df.nunique()==1].index.tolist()
+
+        with open(eda_config_path) as file_obj:
+            data=json.load(file_obj)
+            data["constant_columns"]=constant_cols
+        with open(eda_config_path,"w") as file_obj:
+             json.dump(data,file_obj,indent=4)
+
+    except Exception as e:
+         raise CustomException(e,sys)
+
+def check_outliers(df:pd.DataFrame):
+    try:
+        root_path=Path(__file__).resolve().parent.parent.parent
+        config_path=root_path/"config"
+
+        config_path.mkdir(parents=True,exist_ok=True)
+        eda_config_path=config_path/"eda_config.json"
+
+        numerical_columns=df.select_dtypes(include="number").columns
+
+        outlier_columns=[]
+        total_outliers=0
+        for col in numerical_columns:
+            q1=df[col].quantile(0.25)
+            q3=df[col].quantile(0.75)
+            IQR=q3-q1
+            upper=q3+1.5*IQR
+            lower=q1-1.5*IQR
+
+            lower_outliers=df[col][df[col]<=lower]
+            upper_outliers=df[col][df[col]>=upper]
+
+            total_outliers=len(lower_outliers)+len(upper_outliers)
+
+            if total_outliers>0:
+                outlier_columns.append(col)
+
+        with open(eda_config_path) as file_obj:
+            data=json.load(file_obj)
+            data["outlier_columns"]=outlier_columns
+        with open(eda_config_path,"w") as file_obj:
+            json.dump(data,file_obj,indent=4)
+                    
+                 
+
+    except Exception as e:
+        raise CustomException(e,sys)
+
+
