@@ -50,6 +50,7 @@ class Eda:
             plt=Plots()
             plt.univariate_plots()
             plt.bivariate_plots()
+            plt.multivariate_plots()
             
 
             #--------------

@@ -212,3 +212,43 @@ class BivariatePlots:
         
         except Exception as e:
             raise CustomException(e,sys)
+
+class MultivariatePlots:
+    def __init__(self) -> None:
+        self.plot_config=PlotConfig()
+
+
+    def multivariate_heatmap_pairplot(self):
+
+        try:
+
+            self.plot_config.plots_path.mkdir(parents=True,exist_ok=True)
+                
+            self.plot_config.univariate_plot.mkdir(parents=True,exist_ok=True)
+            self.plot_config.univariate_numerical_plot.mkdir(parents=True,exist_ok=True)
+            self.plot_config.univariate_categorical_plot.mkdir(parents=True,exist_ok=True)
+
+            self.plot_config.bivariate_plot.mkdir(parents=True,exist_ok=True)
+            self.plot_config.numerical_numerical_plot_path.mkdir(parents=True,exist_ok=True)
+            self.plot_config.categorical_numerical_plot_path.mkdir(parents=True,exist_ok=True)
+            self.plot_config.categorical_categorical_plot_path.mkdir(parents=True,exist_ok=True)
+            
+            self.plot_config.multivariate_plot.mkdir(parents=True,exist_ok=True)
+
+            data_path=self.plot_config.root_path/"data"/"student.csv"
+            df=pd.read_csv(data_path)
+
+            corr=df.corr(numeric_only=True)
+            sns.heatmap(corr,annot=True)
+            plt.savefig(self.plot_config.multivariate_plot/"heatmap.png")
+
+            sns.pairplot(data=df)
+            plt.savefig(self.plot_config.multivariate_plot/"pairplot.png")
+
+
+        except Exception as e:
+            raise CustomException(e,sys)
+
+
+            
+                    
