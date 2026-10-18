@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-from preprocess_changer import check_null,check_distribution,check_constant,check_outliers,check_multicolinearity
+from preprocess_changer import check_null,check_distribution,check_constant,check_outliers,check_multicolinearity,check_duplicates,check_invalid_values,check_data_types,check_categorical_encoding
 from src.logger import logging
 from src.exception import CustomException
 from plots import Plots
@@ -33,6 +33,7 @@ class Eda:
         try:
             root_path=Path(__file__).resolve().parent.parent.parent
             data_path=root_path/"data"/"student.csv"
+            revised_data_path=root_path/"data"/"revised_data.csv"
             
             logging.info("STARTED EDA")
             logging.info("READED THE DATA")
@@ -40,11 +41,19 @@ class Eda:
 
 
             logging.info("CALLLING - check_null - FUNCTION")
+
+            df=check_data_types(df)
+            df=check_invalid_values(df)
             check_null(df)
-            check_distribution(df)
+            df=check_duplicates(df)
             check_constant(df)
+            check_distribution(df)
             check_outliers(df)
             check_multicolinearity(df)
+            df=check_categorical_encoding(df)
+
+
+            df.to_csv(revised_data_path,header=True,index=False)
 
             ## some changes have to make for fureter like multivariate ------------------------
             plt=Plots()
