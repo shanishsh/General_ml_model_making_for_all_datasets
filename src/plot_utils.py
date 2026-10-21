@@ -1,3 +1,4 @@
+import sys, os
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -68,8 +69,11 @@ class UnivariatePlot:
                 ax=ax.flatten()
                 for i,col in enumerate(num_cols):
                     plt_obj(data=df,x=col,ax=ax[i])
+                for k in range(len(num_cols), len(ax)):
+                    fig.delaxes(ax[k])
                 plt.tight_layout()
                 plt.savefig(self.plot_config.univariate_numerical_plot/f"{plt_names}.png")
+                plt.close(fig)
         except Exception as e:
             raise CustomException(e,sys)
 
@@ -108,8 +112,11 @@ class UnivariatePlot:
             ax=ax.flatten()
             for i,col in enumerate(cat_cols):
                 sns.countplot(data=df,x=col,ax=ax[i])
+            for k in range(len(cat_cols), len(ax)):
+                fig.delaxes(ax[k])
             plt.tight_layout()
             plt.savefig(self.plot_config.univariate_categorical_plot/f"barChart.png")
+            plt.close(fig)
 
         except Exception as e:
             raise CustomException(e,sys)
@@ -162,7 +169,11 @@ class BivariatePlots:
                     for j in range(i+1,len(num_cols)):
                         plot_object(data=df,x=first_col,y=num_cols[j],ax=ax[plot_index])
                         plot_index+=1
+                for k in range(plot_index, len(ax)):
+                    fig.delaxes(ax[k])
+                plt.tight_layout()
                 plt.savefig(self.plot_config.numerical_numerical_plot_path/f"{name}.png")
+                plt.close(fig)
 
 
         except Exception as e:
@@ -173,42 +184,42 @@ class BivariatePlots:
     def categorical_vs_numerical(self):
 
         try:
-
             data_path=self.plot_config.root_path/"data"/"student.csv"
                 
             df=pd.read_csv(data_path)
-            num_cols=df.select_dtypes(include="number").columns
-            cat_cols=df.select_dtypes(include="O").columns
-            maximum=max(len(num_cols),len(cat_cols))
-            length=maximum
-            row=length//2
-            fig_width=12
-            fig_height=row*3.5
+            num_cols=df.select_dtypes(include="number").columns.tolist()
+            cat_cols=df.select_dtypes(include="O").columns.tolist()
 
-            
+            total_plots = len(num_cols) * len(cat_cols)
+            if total_plots == 0:
+                logging.info("No numerical or categorical columns available for categorical_vs_numerical plots.")
+                return
+
+            ncols = 2
+            row = ceil(total_plots / ncols)
+            fig_width = 12
+            fig_height = max(4, row * 3.5)
+
             self.plot_config.plots_path.mkdir(parents=True,exist_ok=True)
-
-            self.plot_config.univariate_plot.mkdir(parents=True,exist_ok=True)
-            self.plot_config.univariate_numerical_plot.mkdir(parents=True,exist_ok=True)
-            self.plot_config.univariate_categorical_plot.mkdir(parents=True,exist_ok=True)
-
             self.plot_config.bivariate_plot.mkdir(parents=True,exist_ok=True)
-            self.plot_config.numerical_numerical_plot_path.mkdir(parents=True,exist_ok=True)
             self.plot_config.categorical_numerical_plot_path.mkdir(parents=True,exist_ok=True)
-            self.plot_config.categorical_categorical_plot_path.mkdir(parents=True,exist_ok=True)
 
-            self.plot_config.multivariate_plot.mkdir(parents=True,exist_ok=True)
-
-
-        
-            fig,ax=plt.subplots(nrows=row,ncols=2,figsize=(fig_width,fig_height))
-            ax=ax.flatten()
+            fig,ax=plt.subplots(nrows=row,ncols=ncols,figsize=(fig_width,fig_height))
+            ax=np.array(ax).flatten()
             plot_index=0
-            for i,first_col in zip(range(len(num_cols)),num_cols):
-                for j in range(i+1,len(cat_cols)):
-                    sns.barplot(data=df,x=cat_cols[j],y=first_col,ax=ax[plot_index])
+            for first_col in num_cols:
+                for cat_col in cat_cols:
+                    sns.barplot(data=df,x=cat_col,y=first_col,ax=ax[plot_index])
+                    ax[plot_index].set_title(f"{first_col} vs {cat_col}")
+                    ax[plot_index].tick_params(axis='x', rotation=45)
                     plot_index+=1
+
+            for k in range(plot_index, len(ax)):
+                fig.delaxes(ax[k])
+
+            plt.tight_layout()
             plt.savefig(self.plot_config.categorical_numerical_plot_path/"barplot.png")
+            plt.close(fig)
         
         except Exception as e:
             raise CustomException(e,sys)
@@ -239,11 +250,15 @@ class MultivariatePlots:
             df=pd.read_csv(data_path)
 
             corr=df.corr(numeric_only=True)
+            plt.figure(figsize=(8, 6))
             sns.heatmap(corr,annot=True)
+            plt.tight_layout()
             plt.savefig(self.plot_config.multivariate_plot/"heatmap.png")
+            plt.close()
 
-            sns.pairplot(data=df)
-            plt.savefig(self.plot_config.multivariate_plot/"pairplot.png")
+            pair_fig = sns.pairplot(data=df)
+            pair_fig.savefig(self.plot_config.multivariate_plot/"pairplot.png")
+            plt.close()
 
 
         except Exception as e:

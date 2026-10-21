@@ -13,7 +13,10 @@ import pandas as pd
 from preprocess_changer import check_null,check_distribution,check_constant,check_outliers,check_multicolinearity,check_duplicates,check_invalid_values,check_data_types,check_categorical_encoding
 from src.logger import logging
 from src.exception import CustomException
-from plots import Plots
+from src.components import plots
+
+from data_transformation import DataTransformation
+from data_ingestion import DataIngestion
 
 @dataclass
 class EdaConfig:
@@ -28,7 +31,7 @@ class Eda:
     def __init__(self) -> None:
         self.eda_config=EdaConfig()
 
-    def initiate_eda(self,train_path):
+    def initiate_eda(self):
 
         try:
             root_path=Path(__file__).resolve().parent.parent.parent
@@ -56,21 +59,35 @@ class Eda:
             df.to_csv(revised_data_path,header=True,index=False)
 
             ## some changes have to make for fureter like multivariate ------------------------
-            plt=Plots()
+            # plt=plots.()
+            plt=plots.Plots()
             plt.univariate_plots()
             plt.bivariate_plots()
             plt.multivariate_plots()
             
 
             #--------------
-            
-
-
-
 
 
         except Exception as e:
             raise CustomException(e,sys)
+
+
+
+if __name__=="__main__":
+
+    
+    eda=Eda()
+
+    eda.initiate_eda()
+
+    
+    data_ingestion=DataIngestion()
+    train_path,test_path=data_ingestion.initiate_data_ingestion()
+
+    data_transformation=DataTransformation()
+
+    data_transformation.initiate_transformation(train_path=train_path,test_path=test_path)
 
 
 

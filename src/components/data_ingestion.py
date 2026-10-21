@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from eda import Eda
+
 
 
 
@@ -22,7 +22,7 @@ class DataIngestionConfi:
 
     artifact_path=root_path/"artifact"
 
-    tain_data_path=artifact_path/"train.csv"
+    train_data_path=artifact_path/"train.csv"
     test_data_path=artifact_path/"test.csv"
     raw_data_path=artifact_path/"data.csv"
 
@@ -36,39 +36,31 @@ class DataIngestion:
         try:
             logging.info("STARTED DATA INGESTION")
 
-            data_path=self.data_ingestion_config.root_path/"data"/"student.csv"
+            data_path=self.data_ingestion_config.root_path/"data"/"revised_data.csv"
+            revised_data_df=pd.read_csv(data_path)
             df=pd.read_csv(data_path)
 
 
             logging.info("SPLITED - TRAIN_set, TEST_set")
-            train_set,test_set=train_test_split(df,test_size=0.2,random_state=42)
+            train_set,test_set=train_test_split(revised_data_df,test_size=0.2,random_state=42)
 
             logging.info("CREATING ARTIFACT FOLDER - TRAIN_PATH, TEST_PATH, DATA_PATH")
             self.data_ingestion_config.artifact_path.mkdir(parents=True,exist_ok=True)
 
-            df.to_csv(self.data_ingestion_config.raw_data_path,header=True,index=False)
-            train_set.to_csv(self.data_ingestion_config.tain_data_path,header=True,index=False)
+            revised_data_df.to_csv(self.data_ingestion_config.raw_data_path,header=True,index=False)
+            train_set.to_csv(self.data_ingestion_config.train_data_path,header=True,index=False)
             test_set.to_csv(self.data_ingestion_config.test_data_path,header=True,index=False)
 
 
             logging.info("RETURNING PATH - TRAIN, TEST")
             return(
-                self.data_ingestion_config.tain_data_path,
+                self.data_ingestion_config.train_data_path,
                 self.data_ingestion_config.test_data_path
             )
         except Exception as e:
             raise CustomException(e,sys)
 
-if __name__=="__main__":
 
-    data_ingestion=DataIngestion()
-
-    train_path,test_path=data_ingestion.initiate_data_ingestion()
-
-
-    eda=Eda()
-
-    eda.initiate_eda(train_path)
 
 
 

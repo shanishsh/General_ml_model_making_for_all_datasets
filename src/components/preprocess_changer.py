@@ -191,14 +191,19 @@ def check_constant(df: pd.DataFrame):
 
         with open(eda_config_path) as file_obj:
             data = json.load(file_obj)
-            data["constant_features"]["constant_columns"] = constant_cols
 
-            data["constant_features"]["low_variance_columns"]=low_variance_column
+        df.drop(constant_cols,axis=1,inplace=True)
+        df.drop(low_variance_column,axis=1,inplace=True)
+
+        data["constant_features"]["constant_columns"] = constant_cols
+
+        data["constant_features"]["low_variance_columns"]=low_variance_column
         with open(eda_config_path, "w") as file_obj:
             json.dump(data, file_obj, indent=4)
 
     except Exception as e:
         raise CustomException(e, sys)
+
 
 
 def check_outliers(df: pd.DataFrame):
@@ -253,7 +258,11 @@ def check_multicolinearity(df: pd.DataFrame):
         upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 
         # Features to drop
-        threshold = 0.9
+        with open(eda_config_path) as file_obj:
+            data=json.load(file_obj)
+        threshold=data["correlation"]["correlation_threshold"]
+
+
         to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
 
         with open(eda_config_path) as file_obj:
@@ -279,14 +288,21 @@ def check_categorical_encoding(df:pd.DataFrame):
         with open(eda_config_path) as file_obj:
             data=json.load(file_obj)
         ordinal_category_orders=data["categorical_encoding"]["ordinal_category_orders"]
-        target_column=data["categorical_encoding"]["target_column"]
 
-        for order in ordinal_category_orders:
+        target_column=data["target_processing"]["target_column"]
 
-            df[order[0]]=df.replace(order[1])
+        for order,cat_encoding_dict in ordinal_category_orders.items():
 
-        if target_column:
-            df[target_column]=df[target_column].replace(data["categorical_encoding"]["target_encoding_columns"])
+            df[order]=df[order].replace(cat_encoding_dict)
+
+        is_regression=data["is_regression"]
+        if target_column and not is_regression:
+            target_col_dict=data["categorical_encoding"]["target_encoding_columns"]
+
+            for col,target_dict in target_col_dict.items():
+                df[col]=df[col].replace(target_dict)
+        else:
+            pass
 
         return df
 
